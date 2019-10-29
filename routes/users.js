@@ -2,11 +2,11 @@ const { Router } = require('express');
 const { updateProfile } = require('../controllers/updateProfile');
 const { updateAvatar } = require('../controllers/updateAvatar');
 const auth = require('../middlewares/auth');
+const NotFoundError = require('../errors/not-found-err');
 
 const User = require('../models/user');
 
 const router = Router();
-const errRoute = { message: 'Нет пользователя с таким id' };
 
 router.get('/', (req, res) => {
   User.find({})
@@ -14,15 +14,15 @@ router.get('/', (req, res) => {
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', (req, res, next) => {
   User.findById(req.params.id)
     .then((user) => {
       if (user) {
         res.send({ data: user });
       }
-      res.status(404).send(errRoute);
+      throw new NotFoundError('Нет пользователя с таким id');
     })
-    .catch(() => res.status(404).send(errRoute));
+    .catch(next);
 });
 
 router.patch('/me', auth, updateProfile);

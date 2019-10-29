@@ -36,6 +36,15 @@ app.post('/signup', createUser);
 app.use('/users', auth, usersRoutes);
 app.use('/cards', auth, cardsRoutes);
 
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
+    });
+});
+
 app.get('*', (req, res) => {
   res.status(404).send(undfRoute);
 });

@@ -1,7 +1,8 @@
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
+const BadReqError = require('../errors/bad-req');
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -9,6 +10,11 @@ module.exports.createUser = (req, res) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.send({ data: user }))
-    .catch((err) => res.status(400).send({ message: err.message }));
+    .then((user) => {
+      if (user) {
+        res.send({ data: user });
+      }
+      throw new BadReqError('Ошибка запроса');
+    })
+    .catch(next);
 };

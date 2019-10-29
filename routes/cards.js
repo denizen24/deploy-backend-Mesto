@@ -2,16 +2,24 @@ const { Router } = require('express');
 const { createCard } = require('../controllers/cards');
 const { likeCard } = require('../controllers/likeCard');
 const { dislikeCard } = require('../controllers/dislikeCard');
+// const NotFoundError = require('../errors/not-found-err');
+// const NotAuthError = require('../errors/not-auth');
+const ServerError = require('../errors/server-err');
 
 const Card = require('../models/card');
 
 const router = Router();
 const errRoute = { message: 'Нет карточки с таким id' };
 
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
   Card.find({})
-    .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .then((card) => {
+      if (!card) {
+        throw new ServerError('Внутренняя ошибка сервера');
+      }
+      res.send({ data: card });
+    })
+    .catch(next);
 });
 
 router.delete('/:id', (req, res) => {
