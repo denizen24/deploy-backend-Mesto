@@ -3,12 +3,14 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
+const { celebrate, Joi, errors } = require('celebrate');
 const homeRoutes = require('./routes/home');
 const usersRoutes = require('./routes/users');
 const cardsRoutes = require('./routes/cards');
 const { createUser } = require('./controllers/users');
 const { login } = require('./controllers/login');
 const auth = require('./middlewares/auth');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const undfRoute = { message: 'Запрашиваемый ресурс не найден' };
 
@@ -21,6 +23,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: true,
 });
 
+app.use(requestLogger);
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -30,11 +34,28 @@ app.use(helmet());
 
 app.use('/', homeRoutes);
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().min(6).max(38),
+    password: Joi.string().required().min(8),
+  }),
+}), login);
+
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+    avatar: Joi.string().required().min(5),
+    email: Joi.string().required().min(6).max(38),
+    password: Joi.string().required().min(8),
+  }),
+}), createUser);
 
 app.use('/users', auth, usersRoutes);
 app.use('/cards', auth, cardsRoutes);
+
+app.use(errorLogger);
+app.use(errors());
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;

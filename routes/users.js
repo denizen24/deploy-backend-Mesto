@@ -1,12 +1,16 @@
 const { Router } = require('express');
+const { celebrate, Joi, errors } = require('celebrate');
+const { requestLogger, errorLogger } = require('../middlewares/logger');
 const { updateProfile } = require('../controllers/updateProfile');
 const { updateAvatar } = require('../controllers/updateAvatar');
-const auth = require('../middlewares/auth');
 const NotFoundError = require('../errors/not-found-err');
+
 
 const User = require('../models/user');
 
 const router = Router();
+
+router.use(requestLogger);
 
 router.get('/', (req, res) => {
   User.find({})
@@ -14,7 +18,11 @@ router.get('/', (req, res) => {
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 });
 
-router.get('/:id', (req, res, next) => {
+router.get('/:id', celebrate({
+  params: Joi.object().keys({
+    id: Joi.string().alphanum().length(24),
+  }),
+}), (req, res, next) => {
   User.findById(req.params.id)
     .then((user) => {
       if (user) {
@@ -25,8 +33,20 @@ router.get('/:id', (req, res, next) => {
     .catch(next);
 });
 
-router.patch('/me', auth, updateProfile);
-router.patch('/me/avatar', auth, updateAvatar);
+router.patch('/me', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+  }),
+}), updateProfile);
 
+router.patch('/me/avatar', celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().required().min(5),
+  }),
+}), updateAvatar);
+
+router.use(errorLogger);
+router.use(errors());
 
 module.exports = router;

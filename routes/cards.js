@@ -1,4 +1,6 @@
 const { Router } = require('express');
+const { celebrate, Joi, errors } = require('celebrate');
+const { requestLogger, errorLogger } = require('../middlewares/logger');
 const { createCard } = require('../controllers/cards');
 const { likeCard } = require('../controllers/likeCard');
 const { dislikeCard } = require('../controllers/dislikeCard');
@@ -11,6 +13,8 @@ const Card = require('../models/card');
 const router = Router();
 const errRoute = { message: 'Нет карточки с таким id' };
 
+router.use(requestLogger);
+
 router.get('/', (req, res, next) => {
   Card.find({})
     .then((card) => {
@@ -22,7 +26,11 @@ router.get('/', (req, res, next) => {
     .catch(next);
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', celebrate({
+  params: Joi.object().keys({
+    id: Joi.string().alphanum().length(24),
+  }),
+}), (req, res) => {
   Card
     .findById({ _id: req.params.id }, (err, data) => {
       if (!data) {
@@ -43,8 +51,26 @@ router.delete('/:id', (req, res) => {
     });
 });
 
-router.post('/', createCard);
-router.put('/:cardId/likes', likeCard);
-router.delete('/:cardId/likes', dislikeCard);
+router.post('/', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    link: Joi.string().required().min(5),
+  }),
+}), createCard);
+
+router.put('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().alphanum().length(24),
+  }),
+}), likeCard);
+
+router.delete('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().alphanum().length(24),
+  }),
+}), dislikeCard);
+
+router.use(errorLogger);
+router.use(errors());
 
 module.exports = router;
