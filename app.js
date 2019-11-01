@@ -7,9 +7,9 @@ const { celebrate, Joi, errors } = require('celebrate');
 const homeRoutes = require('./routes/home');
 const usersRoutes = require('./routes/users');
 const cardsRoutes = require('./routes/cards');
+const auth = require('./middlewares/auth');
 const { createUser } = require('./controllers/users');
 const { login } = require('./controllers/login');
-const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const undfRoute = { message: 'Запрашиваемый ресурс не найден' };
