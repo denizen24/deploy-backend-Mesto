@@ -15,6 +15,7 @@ const { requestLogger, errorLogger } = require('./middlewares/logger');
 const undfRoute = { message: 'Запрашиваемый ресурс не найден' };
 
 const app = express();
+require('dotenv').config();
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
@@ -31,6 +32,12 @@ app.use(express.json());
 
 app.use(cookieParser());
 app.use(helmet());
+
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
 
 app.use('/', homeRoutes);
 
