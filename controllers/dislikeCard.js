@@ -4,7 +4,7 @@ const NotFoundError = require('../errors/not-found-err');
 module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: req.user._id } }, // убрать _id из массива
+    { $pull: { likes: req.user } }, // убрать _id из массива
     { new: true },
   )
     .then((card) => {

@@ -12,7 +12,7 @@ module.exports.createUser = (req, res, next) => {
     }))
     .then((user) => {
       if (user) {
-        res.send({ data: user });
+        return res.send({ data: user });
       }
       throw new BadReqError('Ошибка запроса');
     })

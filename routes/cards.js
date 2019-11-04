@@ -4,6 +4,7 @@ const { requestLogger, errorLogger } = require('../middlewares/logger');
 const { createCard } = require('../controllers/cards');
 const { likeCard } = require('../controllers/likeCard');
 const { dislikeCard } = require('../controllers/dislikeCard');
+const auth = require('../middlewares/auth');
 // const NotFoundError = require('../errors/not-found-err');
 // const NotAuthError = require('../errors/not-auth');
 const ServerError = require('../errors/server-err');
@@ -58,13 +59,13 @@ router.post('/', celebrate({
   }),
 }), createCard);
 
-router.put('/:cardId/likes', celebrate({
+router.put('/:cardId/likes', auth, celebrate({
   params: Joi.object().keys({
     cardId: Joi.string().alphanum().length(24),
   }),
 }), likeCard);
 
-router.delete('/:cardId/likes', celebrate({
+router.delete('/:cardId/likes', auth, celebrate({
   params: Joi.object().keys({
     cardId: Joi.string().alphanum().length(24),
   }),
