@@ -1,4 +1,4 @@
-fetch('http://95.216.175.5/cohort0/users/me', {
+fetch('https://praktikum.tk/cohort0/users/me', {
   headers: {
     authorization: '77cc3d84-97a1-47d6-8548-cefc66c159d6',
   },
@@ -20,7 +20,7 @@ fetch('http://95.216.175.5/cohort0/users/me', {
   });
 
 let initialCards = [];
-fetch('http://95.216.175.5/cohort0/cards', {
+fetch('https://praktikum.tk/cohort0/cards', {
   headers: {
     authorization: '77cc3d84-97a1-47d6-8548-cefc66c159d6',
   },
